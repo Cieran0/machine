@@ -2,6 +2,7 @@
 #include "operands.h"
 
 byte main_memory[MEM_SIZE] = {0};
+byte read_only_memory[MEM_SIZE] = {0};
 byte registers[REGISTERS_COUNT] = {0};
 
 void hault(int error) {
