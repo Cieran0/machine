@@ -1,0 +1,95 @@
+#include "raylib.h"
+#include "stdio.h"
+const int screenWidth = 800;
+const int screenHeight = 600;
+typedef unsigned char byte;
+
+#define MEM_SIZE 256
+#define MEM_END MEM_SIZE-1
+byte main_memory[MEM_SIZE] = {0};
+byte* video_memory;
+
+
+void set_mem(unsigned long location, byte value) {
+    if(location < MEM_END) {
+        main_memory[location] = value;
+    }
+    video_memory[location-MEM_END] = value;
+}
+
+byte get_mem(unsigned long location) {
+    if(location < MEM_END) {
+        return main_memory[location];
+    }
+    return video_memory[location-MEM_END];
+}
+
+byte get_byte_at(Color c, int i) {
+    if (i==0)
+        return c.r;
+    if (i==1)
+        return c.g;
+    if (i==2)
+        return c.b;
+    return c.a;
+}
+
+void update_texture(Color* pixels) {
+    // Modify the pixel data as needed
+    Color random_colour = {
+        .r=GetRandomValue(0,255),
+        .g=GetRandomValue(0,255),
+        .b=GetRandomValue(0,255),
+        .a=255,
+    };
+    for (int i = 0; i < screenWidth * screenHeight; i++) {
+        for (int j = 0; j < 4; j++)
+        {
+            set_mem(i*4+j + MEM_END,get_byte_at(random_colour,j));
+        }
+        
+    }
+}
+
+int main(void)
+{
+    // Initialization
+    SetRandomSeed(GetTime());
+
+    InitWindow(screenWidth, screenHeight, "DEBUG");
+
+    // Create a texture to hold the pixel data
+    RenderTexture2D target = LoadRenderTexture(screenWidth, screenHeight);
+    Image screenImage = LoadImageFromTexture(target.texture);
+    Color* pixels = screenImage.data;
+    video_memory = (byte*)pixels;
+    UpdateTexture(target.texture, screenImage.data);
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose())
+    {
+        // Update
+        
+        // Clear the screen
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        // Get the texture data from the target
+        if(IsKeyPressed(KEY_A)) {
+            update_texture(pixels);
+            UpdateTexture(target.texture, screenImage.data);
+        }
+        // Update the target texture with the modified pixel data
+
+
+        // Draw the modified texture to the screen
+        DrawTexture(target.texture, 0, 0, RAYWHITE);
+
+        EndDrawing();
+    }
+
+    // Cleanup
+    UnloadRenderTexture(target);
+    CloseWindow();
+
+    return 0;
+}
